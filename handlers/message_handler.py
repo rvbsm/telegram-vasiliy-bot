@@ -32,7 +32,11 @@ async def text_messages(message: types.Message):
         for user in users if users else []:
             try:
                 await message.chat.get_member(user['_id'])
-
+                
+                for char in ('_', '*', '[', ']', '(', ')', '~', '`', '>', '#', '+', '-', '=', '|', '{', '}', '.', '!'):
+                    if char in user['username']:
+                        user['username'] = user['username'].replace(char, "\\"+char)
+                
                 title += f"@{user['username']} — {user['points']}"
             except KeyError:
                 for char in ('_', '*', '[', ']', '(', ')', '~', '`', '>', '#', '+', '-', '=', '|', '{', '}', '.', '!'):
@@ -70,6 +74,10 @@ async def edited_text_messages(message: types.Message):
         for user in users if users else []:
             try:
                 await message.chat.get_member(user['_id'])
+
+                for char in ('_', '*', '[', ']', '(', ')', '~', '`', '>', '#', '+', '-', '=', '|', '{', '}', '.', '!'):
+                    if char in user['username']:
+                        user['username'] = user['username'].replace(char, "\\"+char)
 
                 title += f"@{user['username']} — {user['points']}"
             except KeyError:
