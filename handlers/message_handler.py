@@ -48,7 +48,9 @@ async def text_messages(message: types.Message):
         try:
             result = await bot.edit_message_text(title, message.chat.id, message_id)
         except utils.exceptions.MessageNotModified:
-            return 
+            return
+        except utils.exceptions.MessageCantBeEdited:
+            return
 
     return
 
@@ -84,6 +86,8 @@ async def edited_text_messages(message: types.Message):
         try:
             result = await bot.edit_message_text(title, message.chat.id, message_id)
         except utils.exceptions.MessageNotModified:
+            return
+        except utils.exceptions.MessageCantBeEdited:
             return
 
     return
