@@ -44,7 +44,10 @@ async def table_message(message: types.Message):
 
     result = await message.reply(title)
 
-    await result.pin(disable_notification=True)
+    try:
+        await result.pin(disable_notification=True)
+    except utils.exceptions.BadRequest:
+        pass
 
     if (message.chat.type != 'private'):
         chat = message.chat.__dict__["_values"]
