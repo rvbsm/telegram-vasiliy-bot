@@ -37,7 +37,7 @@ async def text_messages(message: types.Message):
                     if char in user['username']:
                         user['username'] = user['username'].replace(char, "\\"+char)
                 
-                title += f"@{user['username']} — {user['points']}"
+                title += f"@{user['username']} — {user['points']}\n"
             except KeyError:
                 for char in ('_', '*', '[', ']', '(', ')', '~', '`', '>', '#', '+', '-', '=', '|', '{', '}', '.', '!'):
                     if char in user['first_name']:
@@ -79,7 +79,7 @@ async def edited_text_messages(message: types.Message):
                     if char in user['username']:
                         user['username'] = user['username'].replace(char, "\\"+char)
 
-                title += f"@{user['username']} — {user['points']}"
+                title += f"@{user['username']} — {user['points']}\n"
             except KeyError:
                 for char in ('_', '*', '[', ']', '(', ')', '~', '`', '>', '#', '+', '-', '=', '|', '{', '}', '.', '!'):
                     if char in user['first_name']:
