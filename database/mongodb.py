@@ -1,9 +1,11 @@
 import motor.motor_asyncio
+import asyncio
 from aiogram.types import User
 
 class MongoDB:
     def __init__(self, uri: str):
         client = motor.motor_asyncio.AsyncIOMotorClient(uri)
+        client.get_io_loop = asyncio.get_running_loop
         db = client['vasiliy-database']
         self.users = db['users']
         self.commands = db['commands']
