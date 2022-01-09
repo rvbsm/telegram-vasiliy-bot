@@ -1,101 +1,107 @@
-from bot import bot, dp, db
-from aiogram import types, utils
+from main import bot, dp, db
+from aiogram.types import Message
+from aiogram.utils import exceptions
+import string
 from fuzzywuzzy import process
-import re
+from nltk.corpus import stopwords
+stopwords = set(stopwords.words(['russian', 'english']))
+
 
 ban_words = set(open('ban_words.txt', 'r', encoding='utf-8').read().lower().split())
 
 def ban_filter(text: str):
     count = 0
-    text = set(re.sub(r"[^a-zA-ZЁёА-я]+", ' ', text).lower().split())
+    text = ''.join([word for word in text if word not in string.punctuation])
+    text = text.lower()
+    cleaned = {word for word in text.split() if word not in stopwords}
+    percentage = [process.extractOne(word, ban_words)[1] for word in cleaned]
+    count += len([i for i in percentage if i > 93])
 
-    for word in text:
-        if (process.extractOne(word, ban_words)[1] > 95):
-            count += 1
-
-    return count, len(text)
+    return count
 
 
 @dp.message_handler()
-async def text_messages(message: types.Message):
-    await db.userInsert(message.from_user)
+async def text_messages(message: Message):
+    await db.insertUser(message)
 
-    ban_count, total_count = ban_filter(message.text)
+    ban_count = ban_filter(message.text)
 
     if (ban_count > 0):
-        await db.addPoint(message.from_user, ban_count)
+        await db.addPoint(message, ban_count)
 
         title = "*Лидеры чата по Е\-баллам:* \n"
-        users = [await db.userFind(id) for id in await db.usersGet()]
+        users = [await db.getUserFromChat(id, message.chat.id) for id in await db.getUsersFromChat(message)]
         users.sort(key=lambda x: x['points'], reverse=True)
 
         for user in users if users else []:
             try:
                 await message.chat.get_member(user['_id'])
-                
-                for char in ('_', '*', '[', ']', '(', ')', '~', '`', '>', '#', '+', '-', '=', '|', '{', '}', '.', '!'):
+
+                for char in "_*[]()~`>#+-=|{}.!":
                     if char in user['username']:
                         user['username'] = user['username'].replace(char, "\\"+char)
-                
+
                 title += f"@{user['username']} — {user['points']}\n"
             except KeyError:
-                for char in ('_', '*', '[', ']', '(', ')', '~', '`', '>', '#', '+', '-', '=', '|', '{', '}', '.', '!'):
+                for char in "_*[]()~`>#+-=|{}.!":
                     if char in user['first_name']:
                         user['first_name'] = user['first_name'].replace(char, "\\"+char)
-                
+
                 title += f"[{user['first_name']}](tg://user?id={user['_id']}) — user['points']"
-            
-            except utils.exceptions.BadRequest:
+
+            except exceptions.BadRequest:
                 pass
-        
-        message_id = (await db.userFind(message.chat.id))['points']
+
+        message_id = (await db.getUserFromChat(message.chat.id, message.chat.id))['points']
         try:
             result = await bot.edit_message_text(title, message.chat.id, message_id)
-        except utils.exceptions.MessageNotModified:
+
+        except exceptions.MessageNotModified:
             return
-        except utils.exceptions.MessageCantBeEdited:
+        except exceptions.MessageCantBeEdited:
             return
 
     return
 
 @dp.edited_message_handler()
-async def edited_text_messages(message: types.Message):
-    await db.userInsert(message.from_user)
+async def edited_text_messages(message: Message):
+    await db.insertUser(message)
     
-    ban_count, total_count = ban_filter(message.text)
+    ban_count = ban_filter(message.text)
 
     if (ban_count > 0):
-        await db.addPoint(message.from_user, ban_count)
+        await db.addPoint(message, ban_count)
 
         title = "*Лидеры чата по Е\-баллам:* \n"
-        users = [await db.userFind(id) for id in await db.usersGet()]
+        users = [await db.getUserFromChat(id) for id in await db.getUsersFromChat()]
         users.sort(key=lambda x: x['points'], reverse=True)
 
         for user in users if users else []:
             try:
                 await message.chat.get_member(user['_id'])
 
-                for char in ('_', '*', '[', ']', '(', ')', '~', '`', '>', '#', '+', '-', '=', '|', '{', '}', '.', '!'):
+                for char in "_*[]()~`>#+-=|{}.!":
                     if char in user['username']:
                         user['username'] = user['username'].replace(char, "\\"+char)
 
                 title += f"@{user['username']} — {user['points']}\n"
             except KeyError:
-                for char in ('_', '*', '[', ']', '(', ')', '~', '`', '>', '#', '+', '-', '=', '|', '{', '}', '.', '!'):
+                for char in "_*[]()~`>#+-=|{}.!":
                     if char in user['first_name']:
                         user['first_name'] = user['first_name'].replace(char, "\\"+char)
-                
+
                 title += f"[{user['first_name']}](tg://user?id={user['_id']}) — user['points']"
-            
-            except utils.exceptions.BadRequest:
+
+            except exceptions.BadRequest:
                 pass
-        
-        message_id = (await db.userFind(message.chat.id))['points']
+
+        message_id = (await db.getUserFromChat(message))['points']
         try:
             result = await bot.edit_message_text(title, message.chat.id, message_id)
-        except utils.exceptions.MessageNotModified:
+
+        except exceptions.MessageNotModified:
             return
-        except utils.exceptions.MessageCantBeEdited:
+        except exceptions.MessageCantBeEdited:
             return
 
     return

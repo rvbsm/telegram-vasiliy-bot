@@ -4,3 +4,4 @@ dnspython==2.1.0
 motor>=2.5.1
 fuzzywuzzy>=0.18.0
 python-Levenshtein>=0.12.2
+nltk>=3.6.7
