@@ -38,17 +38,18 @@ async def text_messages(message: Message):
         for user in users if users else []:
             try:
                 await message.chat.get_member(user['_id'])
-
+                """
                 for char in "_*[]()~`>#+-=|{}.!":
                     if char in user['username']:
                         user['username'] = user['username'].replace(char, "\\"+char)
-
+                """
                 title += f"@{user['username']} — {user['points']}\n"
             except KeyError:
+                """
                 for char in "_*[]()~`>#+-=|{}.!":
                     if char in user['first_name']:
                         user['first_name'] = user['first_name'].replace(char, "\\"+char)
-
+                """
                 title += f"[{user['first_name']}](tg://user?id={user['_id']}) — user['points']"
 
             except exceptions.BadRequest:
@@ -85,17 +86,18 @@ async def edited_text_messages(message: Message):
         for user in users if users else []:
             try:
                 await message.chat.get_member(user['_id'])
-
+                """
                 for char in "_*[]()~`>#+-=|{}.!":
                     if char in user['username']:
                         user['username'] = user['username'].replace(char, "\\"+char)
-
+                """
                 title += f"@{user['username']} — {user['points']}\n"
             except KeyError:
+                """
                 for char in "_*[]()~`>#+-=|{}.!":
                     if char in user['first_name']:
                         user['first_name'] = user['first_name'].replace(char, "\\"+char)
-
+                """
                 title += f"[{user['first_name']}](tg://user?id={user['_id']}) — user['points']"
 
             except exceptions.BadRequest:
