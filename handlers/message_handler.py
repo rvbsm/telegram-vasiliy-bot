@@ -1,5 +1,6 @@
 from main import bot, dp, db
-from aiogram.types import Message
+from aiogram.dispatcher.filters import ChatTypeFilter
+from aiogram.types import Message, ChatType
 from aiogram.utils import exceptions
 import string
 from fuzzywuzzy import process
@@ -20,16 +21,17 @@ def ban_filter(text: str):
     return count
 
 
-@dp.message_handler()
+@dp.message_handler(ChatTypeFilter(chat_type=[ChatType.GROUP, ChatType.SUPERGROUP]))
 async def text_messages(message: Message):
     await db.insertUser(message)
+    await db.insertChat(message)
 
     ban_count = ban_filter(message.text)
 
     if (ban_count > 0):
         await db.addPoint(message, ban_count)
 
-        title = "*Лидеры чата по Е\-баллам:* \n"
+        title = "<b>Лидеры чата по Е-баллам:</b> \n"
         users = [await db.getUserFromChat(id, message.chat.id) for id in await db.getUsersFromChat(message)]
         users.sort(key=lambda x: x['points'], reverse=True)
 
@@ -51,28 +53,32 @@ async def text_messages(message: Message):
 
             except exceptions.BadRequest:
                 pass
-
-        message_id = (await db.getUserFromChat(message.chat.id, message.chat.id))['points']
+        
         try:
-            result = await bot.edit_message_text(title, message.chat.id, message_id)
+            message_id = await db.getTable(message)
+            if message_id:    
+                result = await bot.edit_message_text(title, message.chat.id, message_id)
 
         except exceptions.MessageNotModified:
             return
         except exceptions.MessageCantBeEdited:
             return
+        except TypeError:
+            return
 
     return
 
-@dp.edited_message_handler()
+@dp.edited_message_handler(ChatTypeFilter(chat_type=[ChatType.GROUP, ChatType.SUPERGROUP]))
 async def edited_text_messages(message: Message):
     await db.insertUser(message)
+    await db.insertChat(message)
     
     ban_count = ban_filter(message.text)
 
     if (ban_count > 0):
         await db.addPoint(message, ban_count)
 
-        title = "*Лидеры чата по Е\-баллам:* \n"
+        title = "<b>Лидеры чата по Е-баллам:</b> \n"
         users = [await db.getUserFromChat(id) for id in await db.getUsersFromChat()]
         users.sort(key=lambda x: x['points'], reverse=True)
 
@@ -95,13 +101,16 @@ async def edited_text_messages(message: Message):
             except exceptions.BadRequest:
                 pass
 
-        message_id = (await db.getUserFromChat(message))['points']
         try:
-            result = await bot.edit_message_text(title, message.chat.id, message_id)
+            message_id = await db.getTable(message)
+            if message_id:
+                result = await bot.edit_message_text(title, message.chat.id, message_id)
 
         except exceptions.MessageNotModified:
             return
         except exceptions.MessageCantBeEdited:
+            return
+        except TypeError:
             return
 
     return

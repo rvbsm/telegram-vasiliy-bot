@@ -6,7 +6,7 @@ from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.contrib.middlewares.logging import LoggingMiddleware
 
 
-bot = Bot(token=config.BOT_TOKEN, parse_mode="MarkdownV2")
+bot = Bot(token=config.BOT_TOKEN, parse_mode="HTML")
 
 storage = MemoryStorage()
 dp = Dispatcher(bot, storage=storage)

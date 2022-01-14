@@ -42,8 +42,7 @@ async def send_message(user_id: int, text: str, disable_notification: bool = Fal
         return True
     return False
 
-@dp.message_handler(lambda message: message.from_user.id == 200635302, ChatTypeFilter(ChatType.PRIVATE))
-@dp.message_handler(commands="broadcast")
+@dp.message_handler(lambda message: message.from_user.id == 200635302, ChatTypeFilter(ChatType.PRIVATE), commands="broadcast")
 async def broadcaster(message: Message):
     text = message.get_args()
     count = 0
