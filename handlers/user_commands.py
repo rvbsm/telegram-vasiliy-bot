@@ -5,12 +5,10 @@ from aiogram.utils.exceptions import Throttled
 
 @dp.message_handler(commands="addcom")
 async def add_command(message: Message):
-    command = message.get_args().split()[0].lower()
-    data = ' '.join(message.get_args().split()[1:])
-    
     if len(message.get_args()) < 2:
         return
-
+    
+    
     if '<' in message.text:
         message.text = message.text.replace('<', "&lt;")
     if '>' in message.text:
@@ -20,13 +18,16 @@ async def add_command(message: Message):
         if char in message.text:
             message.text = message.text.replace(char, "\\"+char)
     """
-    await db.insertCommand(message)
+    command = await db.insertCommand(message)
 
     await message.reply("Добавлена команда <code>{0}</code>\n<b>Доступные команды:</b> \n<code>{1}</code>".format(command, '</code>\n<code>'.join(await db.getCommands(message))))
 
 @dp.message_handler(commands="delcom")
 async def del_command(message: Message):
     command = message.get_args().split()[0]
+
+    if not command:
+        return
 
     await db.deleteCommand(message)
 

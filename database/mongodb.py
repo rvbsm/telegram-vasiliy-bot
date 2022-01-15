@@ -66,7 +66,7 @@ class MongoDB:
 
         return [user['_id'] for user in await user_list.to_list()] if user_list else None
 
-    async def insertCommand(self, message: Message):
+    async def insertCommand(self, message: Message) -> str:
         self.commands = self.db['commands_' + str(message.chat.id)]
 
         message.text = message.html_text
@@ -81,7 +81,7 @@ class MongoDB:
         else:
             result = await self.commands.update_one({'command': command}, {'$set': doc})
         
-        return result
+        return command
     
     async def getCommand(self, message: Message):
         self.commands = self.db['commands_' + str(message.chat.id)]

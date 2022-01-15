@@ -2,22 +2,20 @@ from main import bot, dp, db
 from aiogram.dispatcher.filters import ChatTypeFilter
 from aiogram.types import Message, ChatType
 from aiogram.utils import exceptions
-import string
+import re
 from fuzzywuzzy import process
 from nltk.corpus import stopwords
 stopwords = set(stopwords.words(['russian', 'english']))
-
-
 ban_words = set(open('ban_words.txt', 'r', encoding='utf-8').read().lower().split())
+
 
 def ban_filter(text: str):
     count = 0
-    text = ''.join([word for word in text if word not in string.punctuation])
     text = text.lower()
+    text = re.sub(r"[^a-zёа-я ]+", '', text)
     cleaned = {word for word in text.split() if word not in stopwords}
     percentage = [process.extractOne(word, ban_words)[1] for word in cleaned]
     count += len([i for i in percentage if i > 93])
-
     return count
 
 
