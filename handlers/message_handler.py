@@ -78,7 +78,7 @@ async def edited_text_messages(message: Message):
         await db.addPoint(message, ban_count)
 
         title = "<b>Лидеры чата по Е-баллам:</b> \n"
-        users = [await db.getUserFromChat(id) for id in await db.getUsersFromChat()]
+        users = [await db.getUserFromChat(id, message.chat.id) for id in await db.getUsersFromChat(message)]
         users.sort(key=lambda x: x['points'], reverse=True)
 
         for user in users if users else []:
